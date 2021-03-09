@@ -7,7 +7,7 @@ import {
 } from './three.js/examples/jsm/misc/RollerCoaster.js';
 import { VRButton } from './three.js/examples/jsm/webxr/VRButton.js';
 
-let mesh, material, geometry;
+let mesh, material, geometry, leftPressed = false, rightPressed = false, upPressed = false, downPressed = false;
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setPixelRatio(window.devicePixelRatio);
@@ -18,6 +18,22 @@ document.body.appendChild(renderer.domElement);
 
 document.body.appendChild(VRButton.createButton(renderer));
 
+function Ship(v) {
+  this.dq_pos = new DualQuaternion.fromEulerVector(0 * Math.PI / 180, 0, 0, v);
+
+  this.dq_dx_left     = new DualQuaternion.fromEulerVector( 1*Math.PI/180, 0, 0, [0, 0, 0]);
+  this.dq_dx_right = new DualQuaternion.fromEulerVector(-1 * Math.PI / 180, 0, 0, [0, 0, 0]);
+  this.dq_dx_forward = new DualQuaternion.fromEulerVector(0, 0, 0, [1, 0, 0]);
+  this.dq_dx_backward = new DualQuaternion.fromEulerVector(0, 0, 0, [-1, 0, 0]);
+
+  return this;
+};
+
+Ship.prototype = {
+  'dq_pos': new DualQuaternion.fromEulerVector(0, 0, 0, 0, 0, 0),
+};
+
+
 //
 
 const scene = new THREE.Scene();
@@ -27,6 +43,7 @@ const light = new THREE.HemisphereLight(0xfff0f0, 0x606066);
 light.position.set(1, 1, 1);
 scene.add(light);
 
+const ship = new Ship([0, 0, 0]);
 const train = new THREE.Object3D();
 scene.add(train);
 
@@ -176,14 +193,24 @@ function render() {
 
   }
 
-  //
+  if (leftPressed) { ship.dq_pos = ship.dq_pos.mul(ship.dq_dx_left); }
+  if (rightPressed) { ship.dq_pos = ship.dq_pos.mul(ship.dq_dx_right); }
+  if (upPressed) { ship.dq_pos = ship.dq_pos.mul(ship.dq_dx_forward); }
+  if (downPressed) { ship.dq_pos = ship.dq_pos.mul(ship.dq_dx_backward); }
+
+  let newPos = ship.dq_pos.getEulerVector();
 
 
-  position.z += 0.003;
-  position.x += 0.003;
-  position.y += 0.003;
+  debugger
+  position.y = newPos[3];
+  position.z += newPos[4];
+  position.x += newPos[5];
 
   train.position.copy(position);
+
+  train.rotation.y = newPos[0]
+  train.rotation.z = newPos[1]
+  train.rotation.x = newPos[2]
 
   tangent.copy(curve.getTangentAt(progress));
 
@@ -201,3 +228,22 @@ function render() {
 }
 
 renderer.setAnimationLoop(render);
+
+document.addEventListener("keydown", keyDownHandler, false);
+document.addEventListener("keyup", keyUpHandler, false);
+
+// Обраотка нажатия клавиш управления
+function keyDownHandler(e) {
+  if (e.keyCode == 37 || e.keyCode == 65 || e.keyCode == 97) { leftPressed = true; } // влево  A
+  else if (e.keyCode == 38 || e.keyCode == 87 || e.keyCode == 119) { upPressed = true; } // вверх  W
+  else if (e.keyCode == 39 || e.keyCode == 68 || e.keyCode == 100) { rightPressed = true; } // вправо D
+  else if (e.keyCode == 40 || e.keyCode == 83 || e.keyCode == 115) { downPressed = true; } // вниз   S
+}
+
+// Обработка отжатия клавиш управления
+function keyUpHandler(e) {
+  if (e.keyCode == 37 || e.keyCode == 65 || e.keyCode == 97) { leftPressed = false; } // влево  A
+  else if (e.keyCode == 38 || e.keyCode == 87 || e.keyCode == 119) { upPressed = false; } // вверх  W
+  else if (e.keyCode == 39 || e.keyCode == 68 || e.keyCode == 100) { rightPressed = false; } // вправо D
+  else if (e.keyCode == 40 || e.keyCode == 83 || e.keyCode == 115) { downPressed = false; } // вниз   S
+}
