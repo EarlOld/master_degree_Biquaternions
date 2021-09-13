@@ -1,23 +1,24 @@
 {
-  "name": "master_degree_biquaternions",
+  "name": "master-degree",
   "version": "1.0.0",
   "description": "",
-  "main": "dual_quaternion.js",
+  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "build": "npx webpack --config webpack.config.js",
+    "start": "npx webpack serve --hot"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/EarlOld/master_degree_Biquaternions.git"
-  },
+  "keywords": [],
   "author": "",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/EarlOld/master_degree_Biquaternions/issues"
+  "devDependencies": {
+    "webpack": "^5.21.2",
+    "webpack-cli": "^4.5.0",
+    "webpack-dev-server": "^3.11.2"
   },
-  "homepage": "https://github.com/EarlOld/master_degree_Biquaternions#readme",
   "dependencies": {
-    "express": "^4.17.1"
+    "three-orbit-controls": "^82.1.0",
+    "three-orbitcontrols": "^2.110.3",
+    "three.js": "^0.77.1"
   }
 }
