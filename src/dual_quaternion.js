@@ -12,7 +12,9 @@
  * @constructor
  * @returns {DualQuaternion}
  */
-function DualQuaternion(dq0, dq1, dq2, dq3,  dq4, dq5, dq6, dq7) {
+import {Quaternion} from './quaternion';
+
+export function DualQuaternion(dq0, dq1, dq2, dq3,  dq4, dq5, dq6, dq7) {
 	if (dq0 === undefined) {
 		this.dq = [1, 0, 0, 0,  0, 0, 0, 0];
 	} else {
