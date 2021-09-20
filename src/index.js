@@ -9,10 +9,6 @@ let rightPressed = false;
 let upPressed = false;
 let downPressed = false;
 
-function randomIntFromInterval(min, max) { // min and max included 
-  return Math.floor(Math.random() * (max - min + 1) + min)
-}
-
 //COLORS
 var Colors = {
   red: 0xf25346,
@@ -23,15 +19,16 @@ var Colors = {
   blue: 0x68c3c0,
 };
 
+function randomIntFromInterval(min, max) { // min and max included 
+  return Math.floor(Math.random() * (max - min + 1) + min)
+}
+
 function createPlane() {
   airplane = new AirPlane([0, 100, 0]);
   airplane.mesh.scale.set(.25, .25, .25);
 
   scene.add(airplane.mesh);
 }
-
-init();
-animate();
 
 const init = () => {
 
@@ -120,10 +117,17 @@ function onWindowResize() {
 
 }
 
-document.addEventListener("keydown", keyDownHandler, false);
-document.addEventListener("keyup", keyUpHandler, false);
-
 // Обраотка нажатия клавиш управления
+
+const mauseMoveHandler = (e) => {
+  const innerWidth = window.innerHeight;
+  const innerHeight = window.innerHeight;
+
+  const mediumHeightLine = innerHeight / 2;
+  const mediumWidthLine = innerWidth / 2;
+
+  debugger
+}
 const keyDownHandler = (e) => {
   if (e.keyCode == 37 || e.keyCode == 65 || e.keyCode == 97) { leftPressed = true; } // влево  A
   else if (e.keyCode == 38 || e.keyCode == 87 || e.keyCode == 119) { upPressed = true; } // вверх  W
@@ -160,5 +164,11 @@ const render = () => {
   thirdPersonCamera.Update();
 
   renderer.render(scene, camera);
-
 }
+
+init();
+animate();
+
+document.addEventListener("keydown", keyDownHandler, false);
+document.addEventListener("keyup", keyUpHandler, false);
+document.addEventListener("mousemove", keyUpHandler, false);

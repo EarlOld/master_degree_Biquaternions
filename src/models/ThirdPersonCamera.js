@@ -1,3 +1,6 @@
+
+import * as THREE from '../../three.js/build/three.js';
+
 class ThirdPersonCamera {
   constructor(params) {
     this._params = params;
