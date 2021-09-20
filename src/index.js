@@ -1,11 +1,16 @@
 import * as THREE from '../three.js/build/three.js';
-import { OrbitControls } from '../three.js/examples/jsm/controls/OrbitControls.js'
+// import { OrbitControls } from '../three.js/examples/jsm/controls/OrbitControls.js';
+import grassTexture from '../textures/terrain/grasslight-big.jpg';
 import { DualQuaternion } from './dual_quaternion';
-let camera, controls, scene, renderer, centralObject, airplane;
+let camera, controls, scene, renderer, centralObject, airplane, thirdPersonCamera;
 let leftPressed = false;
 let rightPressed = false;
 let upPressed = false;
 let downPressed = false;
+
+function randomIntFromInterval(min, max) { // min and max included 
+  return Math.floor(Math.random() * (max - min + 1) + min)
+}
 
 //COLORS
 var Colors = {
@@ -16,13 +21,53 @@ var Colors = {
   brownDark: 0x23190f,
   blue: 0x68c3c0,
 };
+
+class ThirdPersonCamera {
+  constructor(params) {
+    this._params = params;
+    this._camera = params.camera;
+
+    this._currentPosition = new THREE.Vector3();
+    this._currentLookat = new THREE.Vector3();
+  }
+
+  _CalculateIdealOffset() {
+    const idealOffset = new THREE.Vector3(-20, 30, 0);
+    idealOffset.applyQuaternion(this._params.target.quaternion);
+    idealOffset.add(this._params.target.position);
+    return idealOffset;
+  }
+
+  _CalculateIdealLookat() {
+    const idealLookat = new THREE.Vector3(90, -20, 0);
+    idealLookat.applyQuaternion(this._params.target.quaternion);
+    idealLookat.add(this._params.target.position);
+    return idealLookat;
+  }
+
+  Update(timeElapsed = 1) {
+    const idealOffset = this._CalculateIdealOffset();
+    const idealLookat = this._CalculateIdealLookat();
+
+    // const t = 0.05;
+    // const t = 4.0 * timeElapsed;
+    const t = 1.0 - Math.pow(0.001, timeElapsed);
+
+    this._currentPosition.lerp(idealOffset, t);
+    this._currentLookat.lerp(idealLookat, t);
+
+    this._camera.position.copy(this._currentPosition);
+    this._camera.lookAt(this._currentLookat);
+  }
+}
+
 class AirPlane {
   constructor(position) {
 
-    this.dq_pos = new DualQuaternion.fromEulerVector(0, 0, 0, position);
-    this.dq_dx_left     = new DualQuaternion.fromEulerVector(0, 0, 0, [0, 1, 0]);
-    this.dq_dx_right    = new DualQuaternion.fromEulerVector(0, 0, 0, [0, -1, 0]);
-    this.dq_dx_forward  = new DualQuaternion.fromEulerVector(0, 0, 0, [ 1, 0, 0]);
+    this.dq_pos = new DualQuaternion.fromEulerVector(0, 0,  0, position);
+    this.dq_dx_left = new DualQuaternion.fromEulerVector(0, 0, 0, [0, 0, -1]);
+    this.dq_dx_right = new DualQuaternion.fromEulerVector(0, 0, 0, [0, 0, 1]);
+    this.dq_dx_forward = new DualQuaternion.fromEulerVector(0, 0, 0, [1, 0, 0]);
     this.dq_dx_backward = new DualQuaternion.fromEulerVector(0, 0, 0, [-1, 0, 0]);
     this.mesh = new THREE.Object3D();
     this.mesh.name = "airPlane";
@@ -89,9 +134,13 @@ class AirPlane {
   }
 
   move() {
-    this.mesh.position.fromArray(this.dq_pos.getVector());
+    const vector = this.dq_pos.getVector();
+    const real = this.dq_pos.getReal().getEuler();
+    debugger
+    this.mesh.position.fromArray(vector);
+    this.mesh.rotation.set(real[0], real[1], real[2]);
+    // camera.position.set(vector[0], vector[1] - 100, vector[2] - 100);
   }
-
 };
 
 function createPlane() {
@@ -108,7 +157,7 @@ animate();
 function init() {
 
   scene = new THREE.Scene();
-  scene.background = new THREE.Color(0xcccccc);
+  scene.background = new THREE.Color(0x68c3c0);
   scene.fog = new THREE.FogExp2(0xcccccc, 0.002);
   createPlane();
 
@@ -117,33 +166,33 @@ function init() {
   renderer.setSize(window.innerWidth, window.innerHeight);
   document.body.appendChild(renderer.domElement);
 
-  camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 1000);
-  camera.position.set(400, 200, 0);
+  camera = new THREE.PerspectiveCamera(120, window.innerWidth / window.innerHeight, 1, 1000);
+  camera.position.set(10, 100, 35);
 
   // controls
 
-  controls = new OrbitControls(camera, renderer.domElement);
-  controls.listenToKeyEvents(window); // optional
+  // controls = new OrbitControls(camera, renderer.domElement);
+  // controls.listenToKeyEvents(window); // optional
 
   //controls.addEventListener( 'change', render ); // call this only in static scenes (i.e., if there is no animation loop)
 
-  controls.enableDamping = true; // an animation loop is required when either damping or auto-rotation are enabled
-  controls.dampingFactor = 0.05;
+  // controls.enableDamping = true; // an animation loop is required when either damping or auto-rotation are enabled
+  // controls.dampingFactor = 0.05;
 
-  controls.screenSpacePanning = false;
+  // controls.screenSpacePanning = false;
 
-  controls.minDistance = 100;
-  controls.maxDistance = 500;
+  // controls.minDistance = 100;
+  // controls.maxDistance = 500;
 
-  controls.maxPolarAngle = Math.PI / 2;
+  // controls.maxPolarAngle = Math.PI / 2;
 
   // world
 
   const geometry = new THREE.CylinderGeometry(0, 10, 30, 4, 1);
-  const material = new THREE.MeshPhongMaterial({ color: 0xffffff, flatShading: true });
 
   for (let i = 0; i < 500; i++) {
-
+    const rndInt = randomIntFromInterval(1, 6);
+    const material = new THREE.MeshPhongMaterial({ color: Object.values(Colors)[rndInt], flatShading: true });
     const mesh = new THREE.Mesh(geometry, material);
     mesh.position.x = Math.random() * 1600 - 800;
     mesh.position.y = 0;
@@ -151,21 +200,50 @@ function init() {
     mesh.updateMatrix();
     mesh.matrixAutoUpdate = false;
     scene.add(mesh);
-
   }
+  const loader = new THREE.TextureLoader();
+  const groundTexture = loader.load(grassTexture);
+  groundTexture.wrapS = groundTexture.wrapT = THREE.RepeatWrapping;
+  groundTexture.repeat.set(25, 25);
+  groundTexture.anisotropy = 16;
+  groundTexture.encoding = THREE.sRGBEncoding;
+
+  const groundMaterial = new THREE.MeshLambertMaterial({ map: groundTexture });
+
+  let groundMesh = new THREE.Mesh(new THREE.PlaneGeometry(20000, 20000), groundMaterial);
+  groundMesh.position.y = -20;
+  groundMesh.rotation.x = - Math.PI / 2;
+  groundMesh.receiveShadow = true;
+  scene.add(groundMesh);
 
   // lights
 
-  const dirLight1 = new THREE.DirectionalLight(0xffffff);
-  dirLight1.position.set(1, 1, 1);
-  scene.add(dirLight1);
+  scene.add(new THREE.AmbientLight(0x666666));
 
-  const dirLight2 = new THREE.DirectionalLight(0x002288);
-  dirLight2.position.set(- 1, - 1, - 1);
-  scene.add(dirLight2);
+  const light = new THREE.DirectionalLight(0xdfebff, 1);
+  light.position.set(50, 200, 100);
+  light.position.multiplyScalar(1.3);
 
-  const ambientLight = new THREE.AmbientLight(0x222222);
-  scene.add(ambientLight);
+  light.castShadow = true;
+
+  light.shadow.mapSize.width = 1024;
+  light.shadow.mapSize.height = 1024;
+
+  const d = 300;
+
+  light.shadow.camera.left = - d;
+  light.shadow.camera.right = d;
+  light.shadow.camera.top = d;
+  light.shadow.camera.bottom = - d;
+
+  light.shadow.camera.far = 1000;
+
+  thirdPersonCamera = new ThirdPersonCamera({
+    camera: camera,
+    target: airplane.mesh
+  });
+
+  scene.add(light);
 
   //
 
@@ -208,19 +286,19 @@ function animate() {
 
   airplane.propeller.rotation.x += 0.3;
 
-  controls.update(); // only required if controls.enableDamping = true, or if controls.autoRotate = true
-
+  // controls.update(); // only required if controls.enableDamping = true, or if controls.autoRotate = true
   render();
 
 }
 
 function render() {
-  if (leftPressed)  { airplane.dq_pos = airplane.dq_pos.mul(airplane.dq_dx_left);     }
-  if (rightPressed) { airplane.dq_pos = airplane.dq_pos.mul(airplane.dq_dx_right);    }
-  if (upPressed)    { airplane.dq_pos = airplane.dq_pos.mul(airplane.dq_dx_forward);  }
-  if (downPressed)  { airplane.dq_pos = airplane.dq_pos.mul(airplane.dq_dx_backward); }
+  if (leftPressed) { airplane.dq_pos = airplane.dq_pos.mul(airplane.dq_dx_left); }
+  if (rightPressed) { airplane.dq_pos = airplane.dq_pos.mul(airplane.dq_dx_right); }
+  if (upPressed) { airplane.dq_pos = airplane.dq_pos.mul(airplane.dq_dx_forward); }
+  if (downPressed) { airplane.dq_pos = airplane.dq_pos.mul(airplane.dq_dx_backward); }
 
   airplane.move();
+  thirdPersonCamera.Update();
 
   renderer.render(scene, camera);
 
