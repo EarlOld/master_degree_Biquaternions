@@ -3,11 +3,12 @@ import grassTexture from '../textures/terrain/grasslight-big.jpg';
 // import { DualQuaternion } from './models/DualQuaternion';
 import { ThirdPersonCamera } from './models/ThirdPersonCamera';
 import { AirPlane } from './models/AirPlane';
-let camera, controls, scene, renderer, centralObject, airplane, thirdPersonCamera;
+let camera, scene, renderer, airplane, thirdPersonCamera;
 let leftPressed = false;
 let rightPressed = false;
 let upPressed = false;
 let downPressed = false;
+let move = false;
 
 //COLORS
 var Colors = {
@@ -125,40 +126,73 @@ const mauseMoveHandler = (e) => {
 
   const mediumHeightLine = innerHeight / 2;
   const mediumWidthLine = innerWidth / 2;
+  const diffOnBaseVertical = Math.abs(e.offsetY - mediumHeightLine) > 50;
+  const diffOnBaseHorzontal = Math.abs(e.offsetX - mediumWidthLine) > 50;
 
-  debugger
+  rightPressed = false;
+  downPressed = false;
+  leftPressed = false;
+  upPressed = false;
+
+  if (diffOnBaseVertical && diffOnBaseHorzontal) {
+    if (e.offsetX < mediumHeightLine && e.offsetY < mediumWidthLine) {
+      leftPressed = true;
+      upPressed = true;
+    } else if (e.offsetX > mediumHeightLine && e.offsetY < mediumWidthLine) {
+      rightPressed = true;
+      upPressed = true;
+    } else if (e.offsetX > mediumHeightLine && e.offsetY > mediumWidthLine) {
+      rightPressed = true;
+      downPressed = true;
+    } else if (e.offsetX < mediumHeightLine && e.offsetY > mediumWidthLine) {
+      leftPressed = true;
+      downPressed = true;
+    }
+  } else if (diffOnBaseVertical) {
+    if (e.offsetY <  mediumWidthLine) {
+      upPressed = true;
+    } else if (e.offsetY > mediumWidthLine) {
+      downPressed = true;
+    }
+  } else if (diffOnBaseHorzontal) {
+    if (e.offsetX < mediumHeightLine) {
+      leftPressed = true;
+    } else if (e.offsetX > mediumHeightLine) {
+      rightPressed = true;
+    }
+  }
 }
 const keyDownHandler = (e) => {
-  if (e.keyCode == 37 || e.keyCode == 65 || e.keyCode == 97) { leftPressed = true; } // влево  A
-  else if (e.keyCode == 38 || e.keyCode == 87 || e.keyCode == 119) { upPressed = true; } // вверх  W
-  else if (e.keyCode == 39 || e.keyCode == 68 || e.keyCode == 100) { rightPressed = true; } // вправо D
-  else if (e.keyCode == 40 || e.keyCode == 83 || e.keyCode == 115) { downPressed = true; } // вниз   S
+  // if (e.keyCode == 37 || e.keyCode == 65 || e.keyCode == 97) { leftPressed = true; } // влево  A
+  if (e.keyCode == 38 || e.keyCode == 87 || e.keyCode == 119) { move = true; } // вверх  W
+  // else if (e.keyCode == 39 || e.keyCode == 68 || e.keyCode == 100) { rightPressed = true; } // вправо D
+  // else if (e.keyCode == 40 || e.keyCode == 83 || e.keyCode == 115) { downPressed = true; } // вниз   S
 }
 
 // Обработка отжатия клавиш управления
 const keyUpHandler = (e) => {
-  if (e.keyCode == 37 || e.keyCode == 65 || e.keyCode == 97) { leftPressed = false; } // влево  A
-  else if (e.keyCode == 38 || e.keyCode == 87 || e.keyCode == 119) { upPressed = false; } // вверх  W
-  else if (e.keyCode == 39 || e.keyCode == 68 || e.keyCode == 100) { rightPressed = false; } // вправо D
-  else if (e.keyCode == 40 || e.keyCode == 83 || e.keyCode == 115) { downPressed = false; } // вниз   S
+  // if (e.keyCode == 37 || e.keyCode == 65 || e.keyCode == 97) { leftPressed = false; } // влево  A
+  if (e.keyCode == 38 || e.keyCode == 87 || e.keyCode == 119) { move = false; } // вверх  W
+  // else if (e.keyCode == 39 || e.keyCode == 68 || e.keyCode == 100) { rightPressed = false; } // вправо D
+  // else if (e.keyCode == 40 || e.keyCode == 83 || e.keyCode == 115) { downPressed = false; } // вниз   S
 }
 
 
 const animate = () => {
-
   requestAnimationFrame(animate);
-
   airplane.propeller.rotation.x += 0.3;
-
   render();
-
 }
 
 const render = () => {
-  if (leftPressed) { airplane.dq_pos = airplane.dq_pos.mul(airplane.dq_dx_left); }
-  if (rightPressed) { airplane.dq_pos = airplane.dq_pos.mul(airplane.dq_dx_right); }
-  if (upPressed) { airplane.dq_pos = airplane.dq_pos.mul(airplane.dq_dx_forward); }
-  if (downPressed) { airplane.dq_pos = airplane.dq_pos.mul(airplane.dq_dx_backward); }
+
+  if (move) {
+    airplane.dq_pos = airplane.dq_pos.mul(airplane.dq_dx_forward);
+    if (leftPressed) { airplane.dq_pos = airplane.dq_pos.mul(airplane.dq_dx_left); }
+    if (rightPressed) { airplane.dq_pos = airplane.dq_pos.mul(airplane.dq_dx_right); }
+    if (upPressed) { airplane.dq_pos = airplane.dq_pos.mul(airplane.dq_dx_up); }
+    if (downPressed) { airplane.dq_pos = airplane.dq_pos.mul(airplane.dq_dx_down); }
+  }
 
   airplane.move();
   thirdPersonCamera.Update();
@@ -171,4 +205,4 @@ animate();
 
 document.addEventListener("keydown", keyDownHandler, false);
 document.addEventListener("keyup", keyUpHandler, false);
-document.addEventListener("mousemove", keyUpHandler, false);
+document.addEventListener("mousemove", mauseMoveHandler, false);

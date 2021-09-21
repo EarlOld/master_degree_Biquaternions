@@ -13,10 +13,12 @@ class AirPlane {
   constructor(position) {
 
     this.dq_pos = new DualQuaternion.fromEulerVector(0, 0, 0, position);
-    this.dq_dx_left = new DualQuaternion.fromEulerVector(0, 0, 0, [0, 0, -1]);
-    this.dq_dx_right = new DualQuaternion.fromEulerVector(0, 0, 0, [0, 0, 1]);
+    this.dq_dx_left = new DualQuaternion.fromEulerVector(0, 0, 0, [0, 0, -3]);
+    this.dq_dx_right = new DualQuaternion.fromEulerVector(0, 0, 0, [0, 0, 3]);
     this.dq_dx_forward = new DualQuaternion.fromEulerVector(0, 0, 0, [1, 0, 0]);
     this.dq_dx_backward = new DualQuaternion.fromEulerVector(0, 0, 0, [-1, 0, 0]);
+    this.dq_dx_up = new DualQuaternion.fromEulerVector(0, 0, 0, [0, 1, 0]);
+    this.dq_dx_down = new DualQuaternion.fromEulerVector(0, 0, 0, [0, -1, 0]);
     this.mesh = new THREE.Object3D();
     this.mesh.name = "airPlane";
 
@@ -84,7 +86,6 @@ class AirPlane {
   move() {
     const vector = this.dq_pos.getVector();
     const real = this.dq_pos.getReal().getEuler();
-    debugger
     this.mesh.position.fromArray(vector);
     this.mesh.rotation.set(real[0], real[1], real[2]);
     // camera.position.set(vector[0], vector[1] - 100, vector[2] - 100);
