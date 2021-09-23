@@ -185,16 +185,13 @@ const animate = () => {
 }
 
 const render = () => {
-
-  if (move) {
-    airplane.dq_pos = airplane.dq_pos.mul(airplane.dq_dx_forward);
-    if (leftPressed) { airplane.dq_pos = airplane.dq_pos.mul(airplane.dq_dx_left); }
-    if (rightPressed) { airplane.dq_pos = airplane.dq_pos.mul(airplane.dq_dx_right); }
-    if (upPressed) { airplane.dq_pos = airplane.dq_pos.mul(airplane.dq_dx_up); }
-    if (downPressed) { airplane.dq_pos = airplane.dq_pos.mul(airplane.dq_dx_down); }
-  }
-
-  airplane.move();
+  airplane.move({
+    move,
+    leftPressed,
+    rightPressed,
+    upPressed,
+    downPressed
+  });
   thirdPersonCamera.Update();
 
   renderer.render(scene, camera);

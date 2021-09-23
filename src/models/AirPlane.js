@@ -83,7 +83,23 @@ class AirPlane {
     this.mesh.position.fromArray(this.dq_pos.getVector());
   }
 
-  move() {
+  move({
+    move,
+    leftPressed,
+    rightPressed,
+    upPressed,
+    downPressed
+  }) {
+    
+
+    if (move) {
+      airplane.dq_pos = airplane.dq_pos.mul(airplane.dq_dx_forward);
+      if (leftPressed) { airplane.dq_pos = airplane.dq_pos.mul(airplane.dq_dx_left); }
+      if (rightPressed) { airplane.dq_pos = airplane.dq_pos.mul(airplane.dq_dx_right); }
+      if (upPressed) { airplane.dq_pos = airplane.dq_pos.mul(airplane.dq_dx_up); }
+      if (downPressed) { airplane.dq_pos = airplane.dq_pos.mul(airplane.dq_dx_down); }
+    }
+
     const vector = this.dq_pos.getVector();
     const real = this.dq_pos.getReal().getEuler();
     this.mesh.position.fromArray(vector);
