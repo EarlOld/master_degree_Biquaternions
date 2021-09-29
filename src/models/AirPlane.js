@@ -11,7 +11,8 @@ var Colors = {
 };
 class AirPlane {
   constructor(position) {
-
+    this.moveTime = 50;
+    this.pathForMove = [];
     this.dq_pos = new DualQuaternion.fromEulerVector(0, 0, 0, position);
     this.dq_dx_left = new DualQuaternion.fromEulerVector(0, 0, 0, [0, 0, -3]);
     this.dq_dx_right = new DualQuaternion.fromEulerVector(0, 0, 0, [0, 0, 3]);
@@ -83,6 +84,33 @@ class AirPlane {
     this.mesh.position.fromArray(this.dq_pos.getVector());
   }
 
+  moveFromMiniMap({
+    onPointEqual = 10,
+    i = 0,
+    j = 0
+  }) {
+    const endXPoint = i * onPointEqual;
+    const endYPoint = j * onPointEqual;
+    const startVector = this.dq_pos.getVector();
+
+    const mediumXPoint = endXPoint - startVector[0];
+    let mediumZPoint = 100;
+    const mediumYPoint = endYPoint - startVector[2];
+
+    for (let index = 0; index < this.moveTime; index++) {
+      const x = endXPoint /  this.moveTime * index;
+      const y = endYPoint /  this.moveTime * index;
+      
+      if (this.moveTime / 2 >= index) {
+        const z = mediumZPoint /  this.moveTime * index * 2;
+        this.pathForMove.unshift(new DualQuaternion.fromEulerVector(0, 0, 0, [x, z, y]));
+      } else if (this.moveTime / 2 < index) {
+        mediumZPoint -= (mediumZPoint /  this.moveTime * index * 2);
+        this.pathForMove.unshift(new DualQuaternion.fromEulerVector(0, 0, 0, [x, mediumZPoint, y]));
+      }
+    }
+  }
+
   move({
     move,
     leftPressed,
@@ -93,11 +121,17 @@ class AirPlane {
     
 
     if (move) {
-      airplane.dq_pos = airplane.dq_pos.mul(airplane.dq_dx_forward);
-      if (leftPressed) { airplane.dq_pos = airplane.dq_pos.mul(airplane.dq_dx_left); }
-      if (rightPressed) { airplane.dq_pos = airplane.dq_pos.mul(airplane.dq_dx_right); }
-      if (upPressed) { airplane.dq_pos = airplane.dq_pos.mul(airplane.dq_dx_up); }
-      if (downPressed) { airplane.dq_pos = airplane.dq_pos.mul(airplane.dq_dx_down); }
+      this.dq_pos = this.dq_pos.mul(this.dq_dx_forward);
+      if (leftPressed) { this.dq_pos = this.dq_pos.mul(this.dq_dx_left); }
+      if (rightPressed) { this.dq_pos = this.dq_pos.mul(this.dq_dx_right); }
+      if (upPressed) { this.dq_pos = this.dq_pos.mul(this.dq_dx_up); }
+      if (downPressed) { this.dq_pos = this.dq_pos.mul(this.dq_dx_down); }
+    }
+
+    if (this.pathForMove?.length) {
+      
+      const nextPos = this.pathForMove.pop();
+      this.dq_pos = this.dq_pos.mul(nextPos);
     }
 
     const vector = this.dq_pos.getVector();

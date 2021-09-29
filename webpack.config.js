@@ -1,5 +1,5 @@
 const path = require('path');
-
+const devMode = process.env.NODE_ENV !== "production";
 module.exports = {
   entry: './src/index.js',
   mode: "development",
@@ -16,6 +16,20 @@ module.exports = {
   module: {
     rules: [
       {
+        test: /\.less$/i,
+        use: [
+          {
+            loader: devMode ? "style-loader" : MiniCssExtractPlugin.loader,
+          }, {
+            loader: "css-loader",
+
+          }, {
+            loader: "less-loader",
+
+          }
+        ],
+      },
+      {
         test: /\.(png|jpe?g|gif)$/i,
         use: [
           {
@@ -25,4 +39,7 @@ module.exports = {
       },
     ],
   },
+  plugins: [].concat(devMode ? [] : [new MiniCssExtractPlugin({
+    filename: 'main.css'
+  })]),
 };

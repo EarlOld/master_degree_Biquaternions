@@ -3,7 +3,10 @@ import grassTexture from '../textures/terrain/grasslight-big.jpg';
 // import { DualQuaternion } from './models/DualQuaternion';
 import { ThirdPersonCamera } from './models/ThirdPersonCamera';
 import { AirPlane } from './models/AirPlane';
-let camera, scene, renderer, airplane, thirdPersonCamera;
+import { MiniMap } from './models/MiniMap';
+import './styles.less';
+
+let camera, scene, renderer, airplane, thirdPersonCamera, miniMap;
 let leftPressed = false;
 let rightPressed = false;
 let upPressed = false;
@@ -24,6 +27,13 @@ function randomIntFromInterval(min, max) { // min and max included
   return Math.floor(Math.random() * (max - min + 1) + min)
 }
 
+const hanleMiniMapClick = (e) => {
+  console.log('hanleMiniMapClick', e);
+  airplane.moveFromMiniMap({
+    ...e.target.dataset
+  });
+};
+
 function createPlane() {
   airplane = new AirPlane([0, 100, 0]);
   airplane.mesh.scale.set(.25, .25, .25);
@@ -32,6 +42,11 @@ function createPlane() {
 }
 
 const init = () => {
+  miniMap = new MiniMap({
+    width: 20,
+    height: 20,
+    onMapClick: hanleMiniMapClick
+  });
 
   scene = new THREE.Scene();
   scene.background = new THREE.Color(0x68c3c0);

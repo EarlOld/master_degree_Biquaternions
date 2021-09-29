@@ -18,7 +18,7 @@ class ThirdPersonCamera {
   }
 
   _CalculateIdealLookat() {
-    const idealLookat = new THREE.Vector3(90, -20, 0);
+    const idealLookat = new THREE.Vector3(-1, 10, 0);
     idealLookat.applyQuaternion(this._params.target.quaternion);
     idealLookat.add(this._params.target.position);
     return idealLookat;
