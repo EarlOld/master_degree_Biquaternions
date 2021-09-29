@@ -19,10 +19,10 @@ export class MiniMap {
   initMap() {
     const map = document.createElement('div');
     map.className = 'mini-map';
-    for (let i = 0; i < this.height; i++) {
+    for (let i = this.height; i > -this.height; i--) {
       const row = document.createElement('div');
       row.className = 'mini-map__row';
-      for (let j = 0; j < this.width; j++) {
+      for (let j = this.width; j > -this.width; j--) {
         const el = document.createElement('div');
         el.className = 'mini-map__item';
         el.dataset.i = i;

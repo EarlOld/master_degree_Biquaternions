@@ -85,28 +85,27 @@ class AirPlane {
   }
 
   moveFromMiniMap({
-    onPointEqual = 10,
+    onPointEqual = 50,
     i = 0,
     j = 0
   }) {
-    const endXPoint = i * onPointEqual;
-    const endYPoint = j * onPointEqual;
-    const startVector = this.dq_pos.getVector();
-
-    const mediumXPoint = endXPoint - startVector[0];
-    let mediumZPoint = 100;
-    const mediumYPoint = endYPoint - startVector[2];
-
-    for (let index = 0; index < this.moveTime; index++) {
-      const x = endXPoint /  this.moveTime * index;
-      const y = endYPoint /  this.moveTime * index;
-      
-      if (this.moveTime / 2 >= index) {
-        const z = mediumZPoint /  this.moveTime * index * 2;
-        this.pathForMove.unshift(new DualQuaternion.fromEulerVector(0, 0, 0, [x, z, y]));
-      } else if (this.moveTime / 2 < index) {
-        mediumZPoint -= (mediumZPoint /  this.moveTime * index * 2);
-        this.pathForMove.unshift(new DualQuaternion.fromEulerVector(0, 0, 0, [x, mediumZPoint, y]));
+    if (j &&  i ) {
+      const endXPoint = i * onPointEqual;
+      const endYPoint = j * onPointEqual;
+      // const startVector = this.dq_pos.getVector();
+  
+      // const mediumXPoint = endXPoint - startVector[0];
+      // let mediumZPoint = 50;
+      // const mediumYPoint = endYPoint - startVector[2];
+      const x = endXPoint /  this.moveTime;
+      const y = endYPoint /  this.moveTime;
+      const z = 250 /  this.moveTime;
+      for (let index = 0; index < this.moveTime; index++) {
+        if (this.moveTime / 2 >= index) {
+          this.pathForMove.unshift(new DualQuaternion.fromEulerVector(0, 0, 0, [x, z, y]));
+        } else if (this.moveTime / 2 < index) {
+          this.pathForMove.unshift(new DualQuaternion.fromEulerVector(0, 0, 0, [x, -z, y]));
+        }
       }
     }
   }

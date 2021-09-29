@@ -1,7 +1,7 @@
 .mini-map {
   position: absolute;
   left: 0;
-  bottom: 0;
+  bottom: -15px;
 }
 
 .mini-map__row {
@@ -14,6 +14,10 @@
   margin-right: -1px;
   border: 1px solid black;
   background: white;
+
+}
+.mini-map__item[data-j='0'], .mini-map__item[data-i='0'] {
+  background: lightgray;
 }
 
 .mini-map__item:hover {
