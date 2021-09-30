@@ -22,7 +22,7 @@ export class MiniMap {
     for (let i = this.height; i > -this.height; i--) {
       const row = document.createElement('div');
       row.className = 'mini-map__row';
-      for (let j = this.width; j > -this.width; j--) {
+      for (let j = - this.width; j < this.width; j++) {
         const el = document.createElement('div');
         el.className = 'mini-map__item';
         el.dataset.i = i;

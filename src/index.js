@@ -35,7 +35,7 @@ const hanleMiniMapClick = (e) => {
 };
 
 function createPlane() {
-  airplane = new AirPlane([0, 100, 0]);
+  airplane = new AirPlane([0, 20, 0]);
   airplane.mesh.scale.set(.25, .25, .25);
 
   scene.add(airplane.mesh);
@@ -141,8 +141,8 @@ const mauseMoveHandler = (e) => {
 
   const mediumHeightLine = innerHeight / 2;
   const mediumWidthLine = innerWidth / 2;
-  const diffOnBaseVertical = Math.abs(e.offsetY - mediumHeightLine) > 50;
-  const diffOnBaseHorzontal = Math.abs(e.offsetX - mediumWidthLine) > 50;
+  const diffOnBaseVertical = Math.abs(mediumHeightLine - e.offsetY) > 50;
+  const diffOnBaseHorzontal = Math.abs(mediumWidthLine - e.offsetX) > 50;
 
   rightPressed = false;
   downPressed = false;

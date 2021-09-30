@@ -11,7 +11,7 @@ var Colors = {
 };
 class AirPlane {
   constructor(position) {
-    this.moveTime = 50;
+    this.moveTime = 500;
     this.pathForMove = [];
     this.dq_pos = new DualQuaternion.fromEulerVector(0, 0, 0, position);
     this.dq_dx_left = new DualQuaternion.fromEulerVector(0, 0, 0, [0, 0, -3]);
@@ -92,14 +92,9 @@ class AirPlane {
     if (j &&  i ) {
       const endXPoint = i * onPointEqual;
       const endYPoint = j * onPointEqual;
-      // const startVector = this.dq_pos.getVector();
-  
-      // const mediumXPoint = endXPoint - startVector[0];
-      // let mediumZPoint = 50;
-      // const mediumYPoint = endYPoint - startVector[2];
       const x = endXPoint /  this.moveTime;
       const y = endYPoint /  this.moveTime;
-      const z = 250 /  this.moveTime;
+      const z = 500 /  this.moveTime;
       for (let index = 0; index < this.moveTime; index++) {
         if (this.moveTime / 2 >= index) {
           this.pathForMove.unshift(new DualQuaternion.fromEulerVector(0, 0, 0, [x, z, y]));
