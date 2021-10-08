@@ -128,22 +128,25 @@ class AirPlane {
     }
   }
 
-  move({ move, leftPressed, rightPressed, upPressed, downPressed }) {
-    if (move) {
-      this.dq_pos = this.dq_pos.mul(this.dq_dx_forward);
-      if (leftPressed) {
-        this.dq_pos = this.dq_pos.mul(this.dq_dx_left);
-      }
-      if (rightPressed) {
-        this.dq_pos = this.dq_pos.mul(this.dq_dx_right);
-      }
-      if (upPressed) {
-        this.dq_pos = this.dq_pos.mul(this.dq_dx_up);
-      }
-      if (downPressed) {
-        this.dq_pos = this.dq_pos.mul(this.dq_dx_down);
-      }
-    }
+  move() {
+
+    this.propeller.rotation.x += 0.3;
+
+    // if (move) {
+    //   this.dq_pos = this.dq_pos.mul(this.dq_dx_forward);
+    //   if (leftPressed) {
+    //     this.dq_pos = this.dq_pos.mul(this.dq_dx_left);
+    //   }
+    //   if (rightPressed) {
+    //     this.dq_pos = this.dq_pos.mul(this.dq_dx_right);
+    //   }
+    //   if (upPressed) {
+    //     this.dq_pos = this.dq_pos.mul(this.dq_dx_up);
+    //   }
+    //   if (downPressed) {
+    //     this.dq_pos = this.dq_pos.mul(this.dq_dx_down);
+    //   }
+    // }
 
     if (this.pathForMove?.length) {
       const nextPos = this.pathForMove.pop();

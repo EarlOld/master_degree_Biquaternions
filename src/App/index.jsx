@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
-import PropTypes from "prop-types";
-import { Drawer, Button, Radio, Space } from "antd";
+import { Button, Radio, Space, Switch } from "antd";
 import * as THREE from "../../three.js/build/three.js";
 import grassTexture from "../../textures/terrain/grasslight-big.jpg";
 // import { DualQuaternion } from './models/DualQuaternion';
@@ -11,22 +10,15 @@ const OrbitControls = require("three-orbit-controls")(THREE);
 import "antd/dist/antd.css";
 import "./styles.less";
 
-let camera,
+var camera,
   scene,
   renderer,
   airplanes = {},
-  thirdPersonCamera,
+  camers = {},
   miniMap,
-  airCamera,
   controls;
 
-var activeAirPlane;
-
-let leftPressed = false;
-let rightPressed = false;
-let upPressed = false;
-let downPressed = false;
-let move = false;
+var activeAirPlane, activeCamera, activeIndex;
 
 //COLORS
 const Colors = {
@@ -39,19 +31,13 @@ const Colors = {
 };
 
 const App = () => {
-  const [visible, setVisible] = useState(false);
   const [activeAirIndex, setActiveAirIndex] = useState(-1);
+  const [activeCameraIndex, setActiveCameraIndex] = useState(true);
   activeAirPlane = airplanes[activeAirIndex];
-  const showDrawer = () => {
-    setVisible(true);
-  };
-
-  const onClose = () => {
-    setVisible(false);
-  };
+  activeCamera = camers[activeAirIndex];
+  activeIndex = activeCameraIndex;
 
   const randomIntFromInterval = (min, max) => {
-    // min and max included
     return Math.floor(Math.random() * (max - min + 1) + min);
   };
 
@@ -68,6 +54,12 @@ const App = () => {
   const createPlane = () => {
     const newIndex = activeAirIndex + 1;
     airplanes[newIndex] = new AirPlane([0, 20, newIndex * 100]);
+    debugger;
+    camers[newIndex] = new ThirdPersonCamera({
+      camera: camera,
+      target: airplanes[newIndex].mesh,
+    });
+
     setActiveAirIndex(newIndex);
     scene.add(airplanes[newIndex].mesh);
   };
@@ -77,65 +69,6 @@ const App = () => {
     camera.updateProjectionMatrix();
 
     renderer.setSize(window.innerWidth, window.innerHeight);
-  };
-
-  // Обраотка нажатия клавиш управления
-
-  const mauseMoveHandler = (e) => {
-    const innerWidth = window.innerHeight;
-    const innerHeight = window.innerHeight;
-
-    const mediumHeightLine = innerHeight / 2;
-    const mediumWidthLine = innerWidth / 2;
-    const diffOnBaseVertical = Math.abs(mediumHeightLine - e.offsetY) > 50;
-    const diffOnBaseHorzontal = Math.abs(mediumWidthLine - e.offsetX) > 50;
-
-    rightPressed = false;
-    downPressed = false;
-    leftPressed = false;
-    upPressed = false;
-
-    if (diffOnBaseVertical && diffOnBaseHorzontal) {
-      if (e.offsetX < mediumHeightLine && e.offsetY < mediumWidthLine) {
-        leftPressed = true;
-        upPressed = true;
-      } else if (e.offsetX > mediumHeightLine && e.offsetY < mediumWidthLine) {
-        rightPressed = true;
-        upPressed = true;
-      } else if (e.offsetX > mediumHeightLine && e.offsetY > mediumWidthLine) {
-        rightPressed = true;
-        downPressed = true;
-      } else if (e.offsetX < mediumHeightLine && e.offsetY > mediumWidthLine) {
-        leftPressed = true;
-        downPressed = true;
-      }
-    } else if (diffOnBaseVertical) {
-      if (e.offsetY < mediumWidthLine) {
-        upPressed = true;
-      } else if (e.offsetY > mediumWidthLine) {
-        downPressed = true;
-      }
-    } else if (diffOnBaseHorzontal) {
-      if (e.offsetX < mediumHeightLine) {
-        leftPressed = true;
-      } else if (e.offsetX > mediumHeightLine) {
-        rightPressed = true;
-      }
-    }
-  };
-  const keyDownHandler = (e) => {
-    // if (e.keyCode == 37 || e.keyCode == 65 || e.keyCode == 97) { leftPressed = true; } // влево  A
-    // if (e.keyCode == 38 || e.keyCode == 87 || e.keyCode == 119) { move = true; } // вверх  W
-    // else if (e.keyCode == 39 || e.keyCode == 68 || e.keyCode == 100) { rightPressed = true; } // вправо D
-    // else if (e.keyCode == 40 || e.keyCode == 83 || e.keyCode == 115) { downPressed = true; } // вниз   S
-  };
-
-  // Обработка отжатия клавиш управления
-  const keyUpHandler = (e) => {
-    // if (e.keyCode == 37 || e.keyCode == 65 || e.keyCode == 97) { leftPressed = false; } // влево  A
-    // if (e.keyCode == 38 || e.keyCode == 87 || e.keyCode == 119) { move = false; } // вверх  W
-    // else if (e.keyCode == 39 || e.keyCode == 68 || e.keyCode == 100) { rightPressed = false; } // вправо D
-    // else if (e.keyCode == 40 || e.keyCode == 83 || e.keyCode == 115) { downPressed = false; } // вниз   S
   };
 
   const animate = useCallback(() => {
@@ -148,19 +81,10 @@ const App = () => {
     for (const key in airplanes) {
       if (Object.hasOwnProperty.call(airplanes, key)) {
         const element = airplanes[key];
-        element.propeller.rotation.x += 0.3;
-        element?.move({
-          move,
-          leftPressed,
-          rightPressed,
-          upPressed,
-          downPressed,
-        });
+        element?.move();
       }
     }
-   
-    // thirdPersonCamera.Update();
-
+    if (activeCamera?.Update && !activeIndex) activeCamera?.Update();
     renderer.render(scene, camera);
   }, [activeAirPlane]);
 
@@ -174,7 +98,6 @@ const App = () => {
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0x68c3c0);
     // scene.fog = new THREE.FogExp2(0xcccccc, 0.002);
-    createPlane();
 
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setPixelRatio(window.devicePixelRatio);
@@ -189,6 +112,7 @@ const App = () => {
     );
     camera.position.set(10, 100, 35);
     controls = new OrbitControls(camera, renderer.domElement);
+    activeCamera = camera;
     controls.update();
     const geometry = new THREE.CylinderGeometry(0, 10, 30, 4, 1);
 
@@ -248,12 +172,8 @@ const App = () => {
 
     light.shadow.camera.far = 1000;
 
-    // thirdPersonCamera = new ThirdPersonCamera({
-    //   camera: camera,
-    //   target: airplane.mesh
-    // });
-
     scene.add(light);
+    createPlane();
 
     window.addEventListener("resize", onWindowResize);
     animate();
@@ -261,21 +181,21 @@ const App = () => {
 
   return (
     <>
-      <Button className="drawer-trigger" type="primary" onClick={showDrawer}>
-        Open Settings
-      </Button>
-      <Drawer
-        title="Settings"
-        placement="right"
-        onClose={onClose}
-        visible={visible}
-      >
-        <div>
+      <div className="drawer-body">
+        <h3>Settings</h3>
+        <div style={{ marginTop: 16 }}>
           <Button type="primary" onClick={() => createPlane([0, 60, 0])}>
             Create Plane
           </Button>
         </div>
-        <div>Choose Airplane</div>
+        <div style={{ margin: "16px 0" }}>Use Orbit Controls Camera</div>
+        <div style={{ marginBottom: "16px" }}>
+          <Switch
+            checked={activeCameraIndex}
+            onChange={(checked) => setActiveCameraIndex(checked)}
+          />
+        </div>
+        <div style={{ margin: "16px 0" }}>Choose Airplane</div>
         <Radio.Group
           onChange={(e) => setActiveAirIndex(e.target.value)}
           value={activeAirIndex}
@@ -288,7 +208,7 @@ const App = () => {
               ))}
           </Space>
         </Radio.Group>
-      </Drawer>
+      </div>
     </>
   );
 };
