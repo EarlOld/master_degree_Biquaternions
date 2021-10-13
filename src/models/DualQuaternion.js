@@ -12,7 +12,7 @@
  * @constructor
  * @returns {DualQuaternion}
  */
-import {Quaternion} from './quaternion';
+import {Quaternion} from './Quaternion';
 
 export function DualQuaternion(dq0, dq1, dq2, dq3,  dq4, dq5, dq6, dq7) {
 	if (dq0 === undefined) {
@@ -57,6 +57,11 @@ DualQuaternion.prototype = {
 	'getVector': function() {
 		var euler_vector = this.getEulerVector();
 		return [euler_vector[3], euler_vector[4], euler_vector[5]];
+	},
+
+	'getVectorForThree': function() {
+		var euler_vector = this.getEulerVector();
+		return [euler_vector[5], euler_vector[3], euler_vector[4]];
 	},
 
 	/**

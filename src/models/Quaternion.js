@@ -70,7 +70,7 @@ Quaternion.prototype = {
 
 
 	/**
-	 * Получение углов Элера (psi, theta, gamma) из кватерниона
+	 * Получение углов Элера (psi, theta, gamma) из кватерниона YZX
 	 */
 	'getEuler': function() {
 		const sin_psi   = -2*(this.q[1]*this.q[3] - this.q[0]*this.q[2]);
@@ -88,6 +88,22 @@ Quaternion.prototype = {
 		return [psi, theta, gamma];
 	},
 
+	'getEulerForThree': function() {
+		const sin_psi   = -2*(this.q[1]*this.q[3] - this.q[0]*this.q[2]);
+		const cos_psi   = Math.pow(this.q[0], 2) + Math.pow(this.q[1], 2) - Math.pow(this.q[2], 2) - Math.pow(this.q[3], 2);
+
+		const sin_theta =  2*(this.q[1]*this.q[2] + this.q[0]*this.q[3]);
+
+		const sin_gamma = -2*(this.q[2]*this.q[3] - this.q[0]*this.q[1]);
+		const cos_gamma = Math.pow(this.q[0], 2) - Math.pow(this.q[1], 2) + Math.pow(this.q[2], 2) - Math.pow(this.q[3], 2);
+
+		const psi   = Math.atan2(sin_psi, cos_psi);
+		const theta = Math.asin(sin_theta);
+		const gamma = Math.atan2(sin_gamma, cos_gamma);
+
+		return [gamma, psi, theta, ];
+	},
+
 	/**
 	 * Кватернионное умножение
 	 * Q1 * Q2 = [w1 * w2 - dot(v1, v2), w1 * v2 + w2 * v1 + cross(v1, v2)]
@@ -102,7 +118,7 @@ Quaternion.prototype = {
 		var x2 = Q2.q[1];
 		var y2 = Q2.q[2];
 		var z2 = Q2.q[3];
-
+		// w -3
 		return new Quaternion(
 			w1*w2 - x1*x2 - y1*y2 - z1*z2,
 			w1*x2 + x1*w2 + y1*z2 - z1*y2,

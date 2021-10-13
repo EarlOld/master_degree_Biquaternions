@@ -53,8 +53,18 @@ const App = () => {
 
   const createPlane = () => {
     const newIndex = activeAirIndex + 1;
-    airplanes[newIndex] = new AirPlane([0, 20, newIndex * 100]);
-    debugger;
+    if (airplanes[newIndex - 1]) {
+      airplanes[newIndex] = new AirPlane(
+        [ newIndex * 100, 20, newIndex * 100],
+        airplanes[newIndex - 1]
+      );
+      if (newIndex === 1) {
+        airplanes[0].setTarget(airplanes[newIndex]);
+      }
+    } else {
+      airplanes[newIndex] = new AirPlane([0, 20, newIndex * 100]);
+    }
+
     camers[newIndex] = new ThirdPersonCamera({
       camera: camera,
       target: airplanes[newIndex].mesh,
@@ -62,6 +72,7 @@ const App = () => {
 
     setActiveAirIndex(newIndex);
     scene.add(airplanes[newIndex].mesh);
+    scene.add(airplanes[newIndex].gun.mesh);
   };
 
   const onWindowResize = () => {
@@ -171,7 +182,6 @@ const App = () => {
     light.shadow.camera.bottom = -d;
 
     light.shadow.camera.far = 1000;
-
     scene.add(light);
     createPlane();
 

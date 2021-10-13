@@ -1,5 +1,6 @@
 import { DualQuaternion } from "./DualQuaternion";
 import * as THREE from "../../three.js/build/three.js";
+import { AirCamera } from "./AirCamera";
 //COLORS
 var Colors = {
   red: 0xf25346,
@@ -10,8 +11,9 @@ var Colors = {
   blue: 0x68c3c0,
 };
 class AirPlane {
-  constructor(position) {
+  constructor(position, target) {
     this.moveTime = 500;
+    this.target = target;
     this.pathForMove = [];
     this.dq_pos = new DualQuaternion.fromEulerVector(0, 0, 0, position);
     this.dq_dx_left = new DualQuaternion.fromEulerVector(0, 0, 0, [0, 0, -3]);
@@ -26,6 +28,7 @@ class AirPlane {
     this.dq_dx_up = new DualQuaternion.fromEulerVector(0, 0, 0, [0, 1, 0]);
     this.dq_dx_down = new DualQuaternion.fromEulerVector(0, 0, 0, [0, -1, 0]);
     this.mesh = new THREE.Object3D();
+    this.gun = new AirCamera(this.dq_pos);
     this.mesh.name = "airPlane";
 
     // Create the cabin
@@ -107,6 +110,10 @@ class AirPlane {
     this.mesh.position.fromArray(this.dq_pos.getVector());
   }
 
+  setTarget(target) {
+    this.target = target;
+  }
+
   moveFromMiniMap({ onPointEqual = 50, i = 0, j = 0 }) {
     if (j && i) {
       const endXPoint = i * onPointEqual;
@@ -117,11 +124,11 @@ class AirPlane {
       for (let index = 0; index < this.moveTime; index++) {
         if (this.moveTime / 2 >= index) {
           this.pathForMove.unshift(
-            new DualQuaternion.fromEulerVector(0, 0, 0, [x, z, y])
+            new DualQuaternion.fromEulerVector(0, 0, 0, [x,0, y])
           );
         } else if (this.moveTime / 2 < index) {
           this.pathForMove.unshift(
-            new DualQuaternion.fromEulerVector(0, 0, 0, [x, -z, y])
+            new DualQuaternion.fromEulerVector(0, 0, 0, [x, 0, y])
           );
         }
       }
@@ -129,7 +136,6 @@ class AirPlane {
   }
 
   move() {
-
     this.propeller.rotation.x += 0.3;
 
     // if (move) {
@@ -152,11 +158,11 @@ class AirPlane {
       const nextPos = this.pathForMove.pop();
       this.dq_pos = this.dq_pos.mul(nextPos);
     }
-
+    this.gun.move(this.dq_pos, this.target?.dq_pos);
     const vector = this.dq_pos.getVector();
-    const real = this.dq_pos.getReal().getEuler();
+    // const real = this.dq_pos.getReal().getEuler();
     this.mesh.position.fromArray(vector);
-    this.mesh.rotation.set(real[0], real[1], real[2]);
+    // this.mesh.rotation.set(real[0], real[1], real[2]);
     // camera.position.set(vector[0], vector[1] - 100, vector[2] - 100);
   }
 }
