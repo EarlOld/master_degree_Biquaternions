@@ -11,9 +11,11 @@ var Colors = {
   blue: 0x68c3c0,
 };
 class AirPlane {
-  constructor(position, target) {
+  constructor({ position, targetPosition, targetIndex }) {
     this.moveTime = 500;
-    this.target = target;
+
+    this.targetPosition = targetPosition;
+    this.targetIndex = targetIndex;
     this.pathForMove = [];
     this.dq_pos = new DualQuaternion.fromEulerVector(0, 0, 0, position);
     this.dq_dx_left = new DualQuaternion.fromEulerVector(0, 0, 0, [0, 0, -3]);
@@ -108,10 +110,20 @@ class AirPlane {
     this.mesh.add(this.propeller);
 
     this.mesh.position.fromArray(this.dq_pos.getVector());
+
+    // circle move variables
+
+    this.angle = (0.5 * Math.PI) / 180;
+    this.currentAngle = 0;
+    this.radius = 2;
   }
 
-  setTarget(target) {
-    this.target = target;
+  setTargetPosition(targetPosition) {
+    this.targetPosition = targetPosition;
+  }
+
+  setTargetIndex(targetIndex) {
+    this.targetIndex = targetIndex;
   }
 
   moveFromMiniMap({ onPointEqual = 50, i = 0, j = 0 }) {
@@ -124,7 +136,7 @@ class AirPlane {
       for (let index = 0; index < this.moveTime; index++) {
         if (this.moveTime / 2 >= index) {
           this.pathForMove.unshift(
-            new DualQuaternion.fromEulerVector(0, 0, 0, [x,0, y])
+            new DualQuaternion.fromEulerVector(0, 0, 0, [x, 0, y])
           );
         } else if (this.moveTime / 2 < index) {
           this.pathForMove.unshift(
@@ -135,7 +147,7 @@ class AirPlane {
     }
   }
 
-  move() {
+  move(targetPosition) {
     this.propeller.rotation.x += 0.3;
 
     // if (move) {
@@ -158,7 +170,19 @@ class AirPlane {
       const nextPos = this.pathForMove.pop();
       this.dq_pos = this.dq_pos.mul(nextPos);
     }
-    this.gun.move(this.dq_pos, this.target?.dq_pos);
+    if (this.targetIndex) {
+      this.currentAngle += this.angle;
+      const x = this.radius * Math.sin(this.currentAngle);
+      const y = this.radius * Math.cos(this.currentAngle);
+      const angleDualQuaternion = new DualQuaternion.fromEulerVector(0, 0, 0, [
+        x,
+        0,
+        y,
+      ]);
+      this.dq_pos = this.dq_pos.mul(angleDualQuaternion);
+    }
+
+    this.gun.move(this.dq_pos, targetPosition);
     const vector = this.dq_pos.getVector();
     // const real = this.dq_pos.getReal().getEuler();
     this.mesh.position.fromArray(vector);

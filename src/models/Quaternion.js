@@ -101,7 +101,7 @@ Quaternion.prototype = {
 		const theta = Math.asin(sin_theta);
 		const gamma = Math.atan2(sin_gamma, cos_gamma);
 
-		return [gamma, psi, theta, ];
+		return [gamma, psi, theta];
 	},
 
 	/**

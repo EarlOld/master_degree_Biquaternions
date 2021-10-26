@@ -13,6 +13,7 @@ var Colors = {
 class AirCamera {
   constructor(dq) {
     this.offset = new DualQuaternion.fromEulerVector(0, 0, 0, [0, -8, 0]);
+    this.offsetEnd = new DualQuaternion.fromEulerVector(0, 0, 0, [20, 0, 0]);
     this.dq_pos = dq.mul(this.offset);
     this.mesh = new THREE.Object3D();
 
@@ -50,24 +51,21 @@ class AirCamera {
     this.mesh.position.fromArray(vector);
 
     if (targetDQPosition) {
-      const dq_mouse_pos_about_fly = parentDQPosition
+      const dq_mouse_pos_about_fly =  this.dq_pos
         .inverse()
         .mul(targetDQPosition);
 
       // Угол между векторами орудия и мышки
       let q_gun_angle = new Quaternion.fromBetweenVectors(
-        parentDQPosition.getVector(),
+        this.offsetEnd.getVector(),
         dq_mouse_pos_about_fly.getVector()
-      );
-
-      this.mesh.setRotationFromQuaternion(
-        new THREE.Quaternion(
-         0,
-          q_gun_angle.q[2],
-          0,
-          q_gun_angle.q[0]
+      );  
+      
+      this.mesh.setRotationFromEuler(
+        new THREE.Euler(
+          ...q_gun_angle.getEulerForThree()
         )
-      );
+      );  
     }
   }
 }

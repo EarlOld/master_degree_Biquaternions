@@ -54,15 +54,17 @@ const App = () => {
   const createPlane = () => {
     const newIndex = activeAirIndex + 1;
     if (airplanes[newIndex - 1]) {
-      airplanes[newIndex] = new AirPlane(
-        [ newIndex * 100, 20, newIndex * 100],
-        airplanes[newIndex - 1]
-      );
+      airplanes[newIndex] = new AirPlane({
+        position: [newIndex * 100, 0, newIndex * 100],
+        targetIndex: newIndex - 1
+      });
       if (newIndex === 1) {
-        airplanes[0].setTarget(airplanes[newIndex]);
+        airplanes[0].setTargetIndex(newIndex);
       }
     } else {
-      airplanes[newIndex] = new AirPlane([0, 20, newIndex * 100]);
+      airplanes[newIndex] = new AirPlane({
+        position: [0, 0, newIndex * 100]
+      });
     }
 
     camers[newIndex] = new ThirdPersonCamera({
@@ -92,9 +94,10 @@ const App = () => {
     for (const key in airplanes) {
       if (Object.hasOwnProperty.call(airplanes, key)) {
         const element = airplanes[key];
-        element?.move();
+        element?.move(airplanes[element.targetIndex]?.dq_pos);
       }
     }
+    
     if (activeCamera?.Update && !activeIndex) activeCamera?.Update();
     renderer.render(scene, camera);
   }, [activeAirPlane]);
