@@ -1,22 +1,28 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { Button, Radio, Space, Switch } from "antd";
+import { Button, Radio, Space, Switch, Drawer, Table } from "antd";
 import * as THREE from "../../three.js/build/three.js";
 import grassTexture from "../../textures/terrain/grasslight-big.jpg";
-// import { DualQuaternion } from './models/DualQuaternion';
-import { ThirdPersonCamera } from "../models/ThirdPersonCamera";
+import DownSquareOutlined from "@ant-design/icons/DownSquareOutlined";
+import UpSquareOutlined from "@ant-design/icons/UpSquareOutlined";
+import MenuUnfoldOutlined from "@ant-design/icons/MenuUnfoldOutlined";
+import MenuFoldOutlined from "@ant-design/icons/MenuFoldOutlined";
 import { AirPlane } from "../models/AirPlane";
 import { MiniMap } from "../models/MiniMap";
 const OrbitControls = require("three-orbit-controls")(THREE);
-import "antd/dist/antd.css";
 import "./styles.less";
+import CreateAirModal from "./CreateAirModal/index.jsx";
+import { AIR_PLANE_STATUSES } from "../services/index.js";
 
 var camera,
   scene,
   renderer,
-  airplanes = {},
   camers = {},
   miniMap,
   controls;
+
+window.airplanes = {};
+
+const { airplanes } = window;
 
 var activeAirPlane, activeCamera, activeIndex;
 
@@ -33,6 +39,8 @@ const Colors = {
 const App = () => {
   const [activeAirIndex, setActiveAirIndex] = useState(-1);
   const [activeCameraIndex, setActiveCameraIndex] = useState(true);
+  const [drawerVisible, setDrawerVisible] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
   activeAirPlane = airplanes[activeAirIndex];
   activeCamera = camers[activeAirIndex];
   activeIndex = activeCameraIndex;
@@ -43,7 +51,6 @@ const App = () => {
 
   const hanleMiniMapClick = useCallback(
     (e) => {
-      console.log("hanleMiniMapClick", e);
       activeAirPlane?.moveFromMiniMap({
         ...e.target.dataset,
       });
@@ -51,30 +58,20 @@ const App = () => {
     [activeAirPlane]
   );
 
-  const createPlane = () => {
-    const newIndex = activeAirIndex + 1;
-    if (airplanes[newIndex - 1]) {
-      airplanes[newIndex] = new AirPlane({
-        position: [newIndex * 100, 0, newIndex * 100],
-        targetIndex: newIndex - 1
-      });
-      if (newIndex === 1) {
-        airplanes[0].setTargetIndex(newIndex);
-      }
-    } else {
-      airplanes[newIndex] = new AirPlane({
-        position: [0, 0, newIndex * 100]
-      });
-    }
+  const createPlane = (values) => {
+    const newIndex = Object.values(airplanes).length;
 
-    camers[newIndex] = new ThirdPersonCamera({
-      camera: camera,
-      target: airplanes[newIndex].mesh,
+    airplanes[newIndex] = new AirPlane({
+      position: [0, 30, newIndex * 200],
+      ...values,
+      id: newIndex,
     });
 
     setActiveAirIndex(newIndex);
     scene.add(airplanes[newIndex].mesh);
-    scene.add(airplanes[newIndex].gun.mesh);
+    if (airplanes[newIndex].gun) {
+      scene.add(airplanes[newIndex].gun.mesh);
+    }
   };
 
   const onWindowResize = () => {
@@ -97,7 +94,7 @@ const App = () => {
         element?.move(airplanes[element.targetIndex]?.dq_pos);
       }
     }
-    
+
     if (activeCamera?.Update && !activeIndex) activeCamera?.Update();
     renderer.render(scene, camera);
   }, [activeAirPlane]);
@@ -126,6 +123,7 @@ const App = () => {
     );
     camera.position.set(10, 100, 35);
     controls = new OrbitControls(camera, renderer.domElement);
+
     activeCamera = camera;
     controls.update();
     const geometry = new THREE.CylinderGeometry(0, 10, 30, 4, 1);
@@ -186,18 +184,85 @@ const App = () => {
 
     light.shadow.camera.far = 1000;
     scene.add(light);
-    createPlane();
+    createPlane({
+      // angle: 30,
+      len: 300,
+      radius: 60,
+      status: AIR_PLANE_STATUSES.INITIAL,
+    });
 
     window.addEventListener("resize", onWindowResize);
     animate();
   }, []);
 
+  const handeActiveAirPlaneHeight = (value) => {
+    if (value > 0) {
+      activeAirPlane?.moveUp();
+    } else {
+      activeAirPlane?.moveDown();
+    }
+  };
+
+  const dataSource = Object.values(airplanes).map((item) => ({
+    name: `AirPlane #${item.id}`,
+    index: item.id,
+    targetIndex: item.targetIndex,
+    position: item.dq_pos.getVector().toString()
+  }));
+
+  const columns = [
+    {
+      title: "Name",
+      dataIndex: "name",
+      key: "name",
+    },
+    {
+      title: "Position",
+      dataIndex: "position",
+      key: "position",
+    },
+    {
+      title: "Index",
+      dataIndex: "index",
+      key: "index",
+    },
+    {
+      title: "Target index",
+      dataIndex: "targetIndex",
+      key: "targetIndex",
+    },
+  ];
+
   return (
     <>
+      <Drawer
+        visible={drawerVisible}
+        onClose={() => setDrawerVisible(false)}
+        width={600}
+        placement="left"
+      >
+        <Table dataSource={dataSource} columns={columns} pagination={false} rowKey="index" />
+      </Drawer>
+      <CreateAirModal
+        isVisible={isModalVisible}
+        onClose={() => setIsModalVisible(false)}
+        onSubmit={(values) => createPlane(values)}
+      />
+      <div className="height-settings">
+        <UpSquareOutlined onClick={() => handeActiveAirPlaneHeight(1)} />
+        <DownSquareOutlined onClick={() => handeActiveAirPlaneHeight(-1)} />
+      </div>
+      <div className="drawer-trigger">
+        <Button
+          icon={drawerVisible ? <MenuFoldOutlined /> : <MenuUnfoldOutlined />}
+          onClick={() => setDrawerVisible(true)}
+        />
+      </div>
+
       <div className="drawer-body">
         <h3>Settings</h3>
         <div style={{ marginTop: 16 }}>
-          <Button type="primary" onClick={() => createPlane([0, 60, 0])}>
+          <Button type="primary" onClick={() => setIsModalVisible(true)}>
             Create Plane
           </Button>
         </div>

@@ -1,0 +1,5 @@
+export const AIR_PLANE_STATUSES = {
+  SEARCH: "SEARCH",
+  INITIAL: "INITIAL",
+  WATCH: "WATCH",
+}
