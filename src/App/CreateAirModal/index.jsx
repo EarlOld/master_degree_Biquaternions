@@ -11,6 +11,7 @@ const CreateAirModal = ({ isVisible, onSubmit, onClose }) => {
       onClose();
     });
   }, [form, onSubmit, onClose]);
+
   return (
     <Modal
       title="Create Modal"
@@ -21,14 +22,10 @@ const CreateAirModal = ({ isVisible, onSubmit, onClose }) => {
       <Form
         form={form}
         initialValues={{
-          // angle: 30,
           len: 300,
           radius: 60,
         }}
       >
-        {/* <Form.Item name="angle" label="Angle">
-          <InputNumber />
-        </Form.Item> */}
         <Form.Item name="radius" label="Radius">
           <InputNumber />
         </Form.Item>

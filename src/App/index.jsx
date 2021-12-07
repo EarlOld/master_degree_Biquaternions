@@ -16,7 +16,6 @@ import { AIR_PLANE_STATUSES } from "../services/index.js";
 var camera,
   scene,
   renderer,
-  camers = {},
   miniMap,
   controls;
 
@@ -38,12 +37,9 @@ const Colors = {
 
 const App = () => {
   const [activeAirIndex, setActiveAirIndex] = useState(-1);
-  const [activeCameraIndex, setActiveCameraIndex] = useState(true);
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   activeAirPlane = airplanes[activeAirIndex];
-  activeCamera = camers[activeAirIndex];
-  activeIndex = activeCameraIndex;
 
   const randomIntFromInterval = (min, max) => {
     return Math.floor(Math.random() * (max - min + 1) + min);
@@ -266,13 +262,13 @@ const App = () => {
             Create Plane
           </Button>
         </div>
-        <div style={{ margin: "16px 0" }}>Use Orbit Controls Camera</div>
+        {/* <div style={{ margin: "16px 0" }}>Use Orbit Controls Camera</div>
         <div style={{ marginBottom: "16px" }}>
           <Switch
             checked={activeCameraIndex}
             onChange={(checked) => setActiveCameraIndex(checked)}
           />
-        </div>
+        </div> */}
         <div style={{ margin: "16px 0" }}>Choose Airplane</div>
         <Radio.Group
           onChange={(e) => setActiveAirIndex(e.target.value)}

@@ -1,16 +1,9 @@
 import { DualQuaternion } from "./DualQuaternion";
 import { Quaternion } from "./Quaternion";
 import * as THREE from "../../three.js/build/three.js";
-//COLORS
-var Colors = {
-  red: 0xf25346,
-  white: 0xd8d0d1,
-  brown: 0x59332e,
-  pink: 0xf5986e,
-  brownDark: 0x23190f,
-  blue: 0x68c3c0,
-};
-class AirCamera {
+import { COLORS } from "../services";
+
+class AirTransmitter {
   constructor(dq, haveGun = true, len) {
     this.offset = new DualQuaternion.fromEulerVector(0, 0, 0, [0, -8, 0]);
     this.offsetEnd = new DualQuaternion.fromEulerVector(0, 0, 0, [100, 0, 0]);
@@ -18,12 +11,12 @@ class AirCamera {
     this.mesh = new THREE.Object3D();
     this.len = len;
 
-    this.mesh.name = "AirCamera";
+    this.mesh.name = "AirTransmitter";
 
     // Create the cabin
     const geomBase = new THREE.BoxGeometry(5, 5, 5, 1, 1, 1);
     const matBase = new THREE.MeshPhongMaterial({
-      color: Colors.red,
+      color: COLORS.red,
       shading: THREE.FlatShading,
     });
     const base = new THREE.Mesh(geomBase, matBase);
@@ -48,14 +41,14 @@ class AirCamera {
       1
     );
     const matGun = new THREE.MeshPhongMaterial({
-      color: connected ? Colors.brownDark : Colors.red,
+      color: connected ? COLORS.brownDark : COLORS.red,
       shading: THREE.FlatShading,
     });
     this.mesh.remove(this.gun);
     this.gun = new THREE.Mesh(geomGun, matGun);
     this.gun.castShadow = true;
     this.gun.receiveShadow = true;
-    this.gun.position.set(connected ? this.len / 2 : 20, -2, 0);
+    this.gun.position.set(connected ? this.len / 2 : 10, 0, 0);
     this.mesh.add(this.gun);
   }
 
@@ -71,7 +64,6 @@ class AirCamera {
         .inverse()
         .mul(targetDQPosition);
 
-      // Угол между векторами орудия и мышки
       let q_gun_angle = new Quaternion.fromBetweenVectors(
         this.offsetEnd.getVector(),
         dq_mouse_pos_about_fly.getVector()
@@ -91,4 +83,4 @@ class AirCamera {
   }
 }
 
-export { AirCamera };
+export { AirTransmitter };

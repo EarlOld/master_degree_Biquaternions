@@ -1,21 +1,7 @@
 import { DualQuaternion } from "./DualQuaternion";
 import * as THREE from "../../three.js/build/three.js";
-import { TextGeometry } from "../../three.js/examples/jsm/geometries/TextGeometry.js";
-import { FontLoader } from "../../three.js/examples/jsm/loaders/FontLoader";
-
-const loader = new FontLoader();
-
-import { AirCamera } from "./AirCamera";
-import { AIR_PLANE_STATUSES } from "../services";
-//COLORS
-var Colors = {
-  red: 0xf25346,
-  white: 0xd8d0d1,
-  brown: 0x59332e,
-  pink: 0xf5986e,
-  brownDark: 0x23190f,
-  blue: 0x68c3c0,
-};
+import { AirTransmitter } from "./AirTransmitter";
+import { AIR_PLANE_STATUSES, COLORS } from "../services";
 class AirPlane {
   constructor({
     position,
@@ -48,7 +34,7 @@ class AirPlane {
     this.dq_dx_down = new DualQuaternion.fromEulerVector(0, 0, 0, [0, -10, 0]);
     this.mesh = new THREE.Object3D();
     if (this.status !== AIR_PLANE_STATUSES.INITIAL) {
-      this.gun = new AirCamera(
+      this.gun = new AirTransmitter(
         this.dq_pos,
         this.status !== AIR_PLANE_STATUSES.INITIAL,
         this.len
@@ -57,23 +43,23 @@ class AirPlane {
     this.mesh.name = "airPlane";
 
     // Create the cabin
-    var geomCockpit = new THREE.BoxGeometry(15, 12, 12, 1, 1, 1);
-    var matCockpit = new THREE.MeshPhongMaterial({
-      color: Colors.red,
+    const geomCockpit = new THREE.BoxGeometry(15, 12, 12, 1, 1, 1);
+    const matCockpit = new THREE.MeshPhongMaterial({
+      color: COLORS.red,
       shading: THREE.FlatShading,
     });
-    var cockpit = new THREE.Mesh(geomCockpit, matCockpit);
+    const cockpit = new THREE.Mesh(geomCockpit, matCockpit);
     cockpit.castShadow = true;
     cockpit.receiveShadow = true;
     this.mesh.add(cockpit);
 
     // Create Engine
-    var geomEngine = new THREE.BoxGeometry(5, 12, 12, 1, 1, 1);
-    var matEngine = new THREE.MeshPhongMaterial({
-      color: Colors.white,
+    const geomEngine = new THREE.BoxGeometry(5, 12, 12, 1, 1, 1);
+    const matEngine = new THREE.MeshPhongMaterial({
+      color: COLORS.white,
       shading: THREE.FlatShading,
     });
-    var engine = new THREE.Mesh(geomEngine, matEngine);
+    const engine = new THREE.Mesh(geomEngine, matEngine);
     engine.position.x = 10;
     engine.castShadow = true;
     engine.receiveShadow = true;
@@ -81,47 +67,23 @@ class AirPlane {
 
     // Create Tailplane
 
-    var geomTailPlane = new THREE.BoxGeometry(4, 5, 1, 1, 1, 1);
-    var matTailPlane = new THREE.MeshPhongMaterial({
-      color: Colors.red,
+    const geomTailPlane = new THREE.BoxGeometry(4, 5, 1, 1, 1, 1);
+    const matTailPlane = new THREE.MeshPhongMaterial({
+      color: COLORS.red,
       shading: THREE.FlatShading,
     });
-    var tailPlane = new THREE.Mesh(geomTailPlane, matTailPlane);
+    const tailPlane = new THREE.Mesh(geomTailPlane, matTailPlane);
     tailPlane.position.set(-9, 6, 0);
     tailPlane.castShadow = true;
     tailPlane.receiveShadow = true;
     this.mesh.add(tailPlane);
 
-    // Text
-
-    // loader.load("Roboto_Bold.json", function (font) {
-    //   const geometry = new TextGeometry(this.id, {
-    //     font: font,
-    //     size: 80,
-    //     height: 5,
-    //     curveSegments: 12,
-    //     bevelEnabled: true,
-    //     bevelThickness: 10,
-    //     bevelSize: 8,
-    //     bevelOffset: 0,
-    //     bevelSegments: 5,
-    //   });
-    //   var matTextPlane = new THREE.MeshBasicMaterial({
-    //     color: Colors.red,
-    //   });
-    //   var textPlane = new THREE.Mesh(geometry, matTextPlane);
-    //   textPlane.position.set(100, 100, 100);
-    //   this.mesh.add(textPlane);
-    // });
-
-    // Create Wing
-
-    var geomSideWing = new THREE.BoxGeometry(10, 2, 37, 1, 1, 1);
-    var matSideWing = new THREE.MeshPhongMaterial({
-      color: Colors.red,
+    const geomSideWing = new THREE.BoxGeometry(10, 2, 37, 1, 1, 1);
+    const matSideWing = new THREE.MeshPhongMaterial({
+      color: COLORS.red,
       shading: THREE.FlatShading,
     });
-    var sideWing = new THREE.Mesh(geomSideWing, matSideWing);
+    const sideWing = new THREE.Mesh(geomSideWing, matSideWing);
     sideWing.position.set(0, 0, 0);
     sideWing.castShadow = true;
     sideWing.receiveShadow = true;
@@ -129,9 +91,9 @@ class AirPlane {
 
     // Propeller
 
-    var geomPropeller = new THREE.BoxGeometry(5, 2, 2, 1, 1, 1);
-    var matPropeller = new THREE.MeshPhongMaterial({
-      color: Colors.brown,
+    const geomPropeller = new THREE.BoxGeometry(5, 2, 2, 1, 1, 1);
+    const matPropeller = new THREE.MeshPhongMaterial({
+      color: COLORS.brown,
       shading: THREE.FlatShading,
     });
     this.propeller = new THREE.Mesh(geomPropeller, matPropeller);
@@ -140,13 +102,13 @@ class AirPlane {
 
     // Blades
 
-    var geomBlade = new THREE.BoxGeometry(1, 25, 5, 1, 1, 1);
-    var matBlade = new THREE.MeshPhongMaterial({
-      color: Colors.brownDark,
+    const geomBlade = new THREE.BoxGeometry(1, 25, 5, 1, 1, 1);
+    const matBlade = new THREE.MeshPhongMaterial({
+      color: COLORS.brownDark,
       shading: THREE.FlatShading,
     });
 
-    var blade = new THREE.Mesh(geomBlade, matBlade);
+    const blade = new THREE.Mesh(geomBlade, matBlade);
     blade.position.set(2, 0, 0);
     blade.castShadow = true;
     blade.receiveShadow = true;
@@ -166,7 +128,7 @@ class AirPlane {
 
     this.mesh.position.fromArray(this.dq_pos.getVector());
 
-    // circle move variables
+    // circle move constiables
 
     this.angle = (0.5 * Math.PI) / 180;
     this.currentAngle = 0;
