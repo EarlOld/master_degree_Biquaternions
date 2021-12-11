@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { Button, Radio, Space, Switch, Drawer, Table } from "antd";
+import { Button, Radio, Space, Drawer, Table } from "antd";
 import * as THREE from "../../three.js/build/three.js";
 import grassTexture from "../../textures/terrain/grasslight-big.jpg";
 import DownSquareOutlined from "@ant-design/icons/DownSquareOutlined";
@@ -9,9 +9,9 @@ import MenuFoldOutlined from "@ant-design/icons/MenuFoldOutlined";
 import { AirPlane } from "../models/AirPlane";
 import { MiniMap } from "../models/MiniMap";
 const OrbitControls = require("three-orbit-controls")(THREE);
-import "./styles.less";
 import CreateAirModal from "./CreateAirModal/index.jsx";
-import { AIR_PLANE_STATUSES } from "../services/index.js";
+import { AIR_PLANE_STATUSES, COLORS } from "../services/index.js";
+import "./styles.less";
 
 var camera,
   scene,
@@ -24,16 +24,6 @@ window.airplanes = {};
 const { airplanes } = window;
 
 var activeAirPlane, activeCamera, activeIndex;
-
-//COLORS
-const Colors = {
-  red: 0xf25346,
-  white: 0xd8d0d1,
-  brown: 0x59332e,
-  pink: 0xf5986e,
-  brownDark: 0x23190f,
-  blue: 0x68c3c0,
-};
 
 const App = () => {
   const [activeAirIndex, setActiveAirIndex] = useState(-1);
@@ -127,7 +117,7 @@ const App = () => {
     for (let i = 0; i < 500; i++) {
       const rndInt = randomIntFromInterval(1, 6);
       const material = new THREE.MeshPhongMaterial({
-        color: Object.values(Colors)[rndInt],
+        color: Object.values(COLORS)[rndInt],
         flatShading: true,
       });
       const mesh = new THREE.Mesh(geometry, material);
